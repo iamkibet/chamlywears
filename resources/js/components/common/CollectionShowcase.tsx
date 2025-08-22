@@ -20,8 +20,8 @@ interface Product {
   price: number;
   images: string[];
   description: string;
-  sizes: string[];
-  colors: string[];
+  available_sizes: string[];
+  available_colors: string[];
   slug: string;
   featured: boolean;
 }
@@ -46,7 +46,7 @@ export function CollectionShowcase({ title, subtitle, description, products: pro
 
   const filteredProducts = activeCategory === 'ALL' 
     ? products 
-    : products.filter(product => product.category.name === activeCategory);
+    : products.filter(product => product?.category?.name === activeCategory);
 
   // Debug: Log the number of products being displayed
   console.log(`Active category: ${activeCategory}, Total products: ${products.length}, Filtered products: ${filteredProducts.length}`);
@@ -57,8 +57,8 @@ export function CollectionShowcase({ title, subtitle, description, products: pro
 
   const openProductPopup = (product: Product) => {
     setSelectedProduct({ ...product, isOpen: true });
-    setSelectedSize(product.sizes[0] || '');
-    setSelectedColor(product.colors[0] || '');
+    setSelectedSize(product.available_sizes?.[0] || '');
+    setSelectedColor(product.available_colors?.[0] || '');
     document.body.style.overflow = 'hidden';
   };
 
@@ -76,11 +76,11 @@ export function CollectionShowcase({ title, subtitle, description, products: pro
     if (isLoggedIn) {
       toggleFavorite({
         id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.images[0],
-        slug: product.slug,
-        category: product.category.name
+        name: product.name || 'Product',
+        price: product.price || 0,
+        image: product.images?.[0] || '/images/chamly/11.jpeg',
+        slug: product.slug || `product-${product.id}`,
+        category: product.category?.name || 'Product'
       });
     } else {
       setShowLoginPrompt(true);
@@ -147,16 +147,20 @@ export function CollectionShowcase({ title, subtitle, description, products: pro
               </div>
 
               {/* Product Images with Uniform Spacing */}
-              {filteredProducts.map((product, index) => (
+              {filteredProducts.filter(product => product && product.images && product.images.length > 0).map((product, index) => (
                 <div 
                   key={product.id} 
                   className="break-inside-avoid mb-8 group cursor-pointer"
-                  onClick={() => openProductPopup(product)}
+                  onClick={() => {
+                    if (product.available_sizes?.length && product.available_colors?.length) {
+                      openProductPopup(product);
+                    }
+                  }}
                 >
                   <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
                     <img
-                      src={product.images[0]}
-                      alt={product.name}
+                      src={product.images?.[0] || '/images/chamly/11.jpeg'}
+                      alt={product.name || 'Product'}
                       className={`w-full object-cover transition-transform duration-700 group-hover:scale-110 ${
                         // Varying heights for staggered effect
                         index % 4 === 0 ? 'h-80' :
@@ -167,9 +171,12 @@ export function CollectionShowcase({ title, subtitle, description, products: pro
                     {/* Hover Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
                       <div className="absolute bottom-4 left-4 right-4 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                        <h4 className="font-bold text-lg mb-1">{product.name}</h4>
-                        <p className="text-sm text-gray-200 mb-2">{product.description}</p>
-                        <p className="text-xl font-bold">KES {product.price.toLocaleString()}</p>
+                        <h4 className="font-bold text-lg mb-1">{product.name || 'Product'}</h4>
+                        <p className="text-sm text-gray-200 mb-2">{product.description || 'No description available'}</p>
+                        <p className="text-xl font-bold">KES {product.price?.toLocaleString() || '0'}</p>
+                        {product.category?.name && (
+                          <p className="text-xs text-gray-300 mt-1">{product.category.name}</p>
+                        )}
                       </div>
                       <div className="absolute top-4 right-4 flex gap-2">
                         <button
@@ -178,9 +185,19 @@ export function CollectionShowcase({ title, subtitle, description, products: pro
                         >
                           <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'text-red-500 fill-current' : 'text-white'}`} />
                         </button>
-                        <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
-                          <Plus className="w-5 h-5 text-white" />
-                        </div>
+                        {(!product.available_sizes?.length || !product.available_colors?.length) && (
+                          <div 
+                            className="w-10 h-10 bg-red-500/80 backdrop-blur-sm rounded-full flex items-center justify-center cursor-help"
+                            title="Product configuration incomplete - sizes or colors not configured"
+                          >
+                            <span className="text-white text-xs font-bold">!</span>
+                          </div>
+                        )}
+                        {product.available_sizes?.length && product.available_colors?.length && (
+                          <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                            <Plus className="w-5 h-5 text-white" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -235,8 +252,8 @@ export function CollectionShowcase({ title, subtitle, description, products: pro
               {/* Product Image */}
                                    <div className="relative h-80 overflow-hidden rounded-t-3xl">
                        <img
-                         src={selectedProduct.images[0]}
-                         alt={selectedProduct.name}
+                         src={selectedProduct.images?.[0] || '/images/chamly/11.jpeg'}
+                         alt={selectedProduct.name || 'Product'}
                          className="w-full h-full object-cover"
                        />
                      </div>
@@ -245,76 +262,86 @@ export function CollectionShowcase({ title, subtitle, description, products: pro
               <div className="p-8">
                 <div className="mb-4">
                                            <span className="inline-block bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-full mb-3">
-                           {selectedProduct.category.name}
+                           {selectedProduct.category?.name || 'Product'}
                          </span>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h3>
-                  <p className="text-gray-600 mb-4">{selectedProduct.description}</p>
-                  <p className="text-3xl font-bold text-gray-900">KES {selectedProduct.price.toLocaleString()}</p>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-2">{selectedProduct.name || 'Product'}</h3>
+                  <p className="text-gray-600 mb-4">{selectedProduct.description || 'No description available'}</p>
+                  <p className="text-3xl font-bold text-gray-900">KES {selectedProduct.price?.toLocaleString() || '0'}</p>
                 </div>
 
                 {/* Sizes */}
-                <div className="mb-6">
-                  <h4 className="font-semibold text-gray-900 mb-3">Available Sizes</h4>
-                  <div className="flex gap-2">
-                    {selectedProduct.sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`px-4 py-2 border rounded-lg transition-colors ${
-                          selectedSize === size
-                            ? 'border-gray-900 bg-gray-900 text-white'
-                            : 'border-gray-200 hover:border-gray-900'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                {selectedProduct.available_sizes && selectedProduct.available_sizes.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-gray-900 mb-3">Available Sizes</h4>
+                    <div className="flex gap-2">
+                      {selectedProduct.available_sizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                          className={`px-4 py-2 border rounded-lg transition-colors ${
+                            selectedSize === size
+                              ? 'border-gray-900 bg-gray-900 text-white'
+                              : 'border-gray-200 hover:border-gray-900'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Colors */}
-                <div className="mb-8">
-                  <h4 className="font-semibold text-gray-900 mb-3">Available Colors</h4>
-                  <div className="flex gap-2">
-                    {selectedProduct.colors.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setSelectedColor(color)}
+                {selectedProduct.available_colors && selectedProduct.available_colors.length > 0 && (
+                  <div className="mb-8">
+                    <h4 className="font-semibold text-gray-900 mb-3">Available Colors</h4>
+                    <div className="flex gap-2">
+                      {selectedProduct.available_colors.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => setSelectedColor(color)}
                         className={`px-3 py-1 rounded-full transition-colors ${
                           selectedColor === color
                             ? 'bg-gray-900 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
+                        >
+                          {color}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex gap-4">
-                  <Button 
-                    onClick={() => {
-                      if (selectedSize && selectedColor && selectedProduct) {
-                        addToCart({
-                          id: selectedProduct.id,
-                          name: selectedProduct.name,
-                          price: selectedProduct.price,
-                          image: selectedProduct.images[0],
-                          size: selectedSize,
-                          color: selectedColor,
-                          category: selectedProduct.category.name
-                        });
-                        closeProductPopup();
-                      }
-                    }}
-                    disabled={!selectedSize || !selectedColor}
-                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    Add to Cart
-                  </Button>
+                  {selectedProduct.available_sizes?.length && selectedProduct.available_colors?.length ? (
+                    <Button 
+                      onClick={() => {
+                        if (selectedSize && selectedColor && selectedProduct) {
+                          addToCart({
+                            id: selectedProduct.id,
+                            name: selectedProduct.name || 'Product',
+                            price: selectedProduct.price || 0,
+                            image: selectedProduct.images?.[0] || '/images/chamly/11.jpeg',
+                            size: selectedSize,
+                            color: selectedColor,
+                            category: selectedProduct.category?.name || 'Product'
+                          });
+                          closeProductPopup();
+                        }
+                      }}
+                      disabled={!selectedSize || !selectedColor}
+                      className="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ShoppingCart className="w-5 h-5 mr-2" />
+                      Add to Cart
+                    </Button>
+                  ) : (
+                    <div className="flex-1 text-center py-3 text-gray-500">
+                      Product configuration required
+                    </div>
+                  )}
                   <Button 
                     variant="outline" 
                     className="px-6 py-3 rounded-xl border-gray-300 hover:border-gray-900"
@@ -322,11 +349,11 @@ export function CollectionShowcase({ title, subtitle, description, products: pro
                       if (selectedProduct) {
                         toggleFavorite({
                           id: selectedProduct.id,
-                          name: selectedProduct.name,
-                          price: selectedProduct.price,
-                          image: selectedProduct.images[0],
-                          slug: selectedProduct.slug,
-                          category: selectedProduct.category.name
+                          name: selectedProduct.name || 'Product',
+                          price: selectedProduct.price || 0,
+                          image: selectedProduct.images?.[0] || '/images/chamly/11.jpeg',
+                          slug: selectedProduct.slug || `product-${selectedProduct.id}`,
+                          category: selectedProduct.category?.name || 'Product'
                         });
                       }
                     }}
