@@ -21,6 +21,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'phone',
+        'city',
+        'address',
+        'postal_code',
+        'is_admin',
     ];
 
     /**
@@ -43,6 +49,39 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * Check if the user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin' || $this->is_admin === true;
+    }
+    
+    /**
+     * Check if the user is a regular user.
+     */
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
+
+    /**
+     * Get the user's orders.
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Get the user's customer profile.
+     */
+    public function customerProfile()
+    {
+        return $this->hasOne(\App\Models\CustomerProfile::class);
     }
 }

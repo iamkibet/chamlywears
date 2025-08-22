@@ -130,6 +130,83 @@
     --sidebar-ring: oklch(0.439 0 0);
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Print styles for receipt */
+@media print {
+  /* Hide navigation and action buttons when printing */
+  .print\\:hidden {
+    display: none !important;
+  }
+  
+  /* Ensure white background for print */
+  .print\\:bg-white {
+    background-color: white !important;
+  }
+  
+  /* Remove shadows and borders for clean print */
+  .print\\:shadow-none {
+    box-shadow: none !important;
+  }
+  
+  /* Remove rounded corners for print */
+  .print\\:rounded-none {
+    border-radius: 0 !important;
+  }
+  
+  /* Adjust padding for print */
+  .print\\:p-6 {
+    padding: 1.5rem !important;
+  }
+  
+  .print\\:px-0 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  .print\\:py-0 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Ensure text is readable in print */
+  .print\\:text-black {
+    color: black !important;
+  }
+  
+  .print\\:text-gray-600 {
+    color: #4b5563 !important;
+  }
+  
+  .print\\:text-gray-800 {
+    color: #1f2937 !important;
+  }
+  
+  /* Force page breaks where needed */
+  .page-break {
+    page-break-before: always;
+  }
+  
+  /* Ensure tables don't break across pages */
+  table {
+    page-break-inside: avoid;
+  }
+  
+  /* Ensure images print properly */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Remove any background colors that might not print well */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}
+
 @layer base {
     * {
         @apply border-border;

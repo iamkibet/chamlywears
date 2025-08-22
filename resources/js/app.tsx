@@ -4,6 +4,9 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
+import { CartProvider } from './components/common/CartProvider';
+import { FavoritesProvider } from './components/common/FavoritesProvider';
+import { ThemeProvider } from './components/common/ThemeProvider';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -13,7 +16,15 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        root.render(
+            <ThemeProvider>
+                <CartProvider>
+                    <FavoritesProvider>
+                        <App {...props} />
+                    </FavoritesProvider>
+                </CartProvider>
+            </ThemeProvider>
+        );
     },
     progress: {
         color: '#4B5563',

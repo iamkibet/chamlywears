@@ -1,47 +1,92 @@
-// Components
-import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
+import React from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Mail, ArrowLeft } from 'lucide-react';
 
-export default function ForgotPassword({ status }: { status?: string }) {
-    return (
-        <AuthLayout title="Forgot password" description="Enter your email to receive a password reset link">
-            <Head title="Forgot password" />
+export default function ForgotPassword() {
+  const { data, setData, post, processing, errors, status } = useForm({
+    email: '',
+  });
 
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    post('/forgot-password');
+  };
 
-            <div className="space-y-6">
-                <Form method="post" action={route('password.email')}>
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input id="email" type="email" name="email" autoComplete="off" autoFocus placeholder="email@example.com" />
+  return (
+    <>
+      <Head title="Forgot Password" />
+      
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <h2 className="mt-6 text-3xl font-bold text-gray-900">
+              Forgot your password?
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              No problem. Just let us know your email address and we will email you a password reset link.
+            </p>
+          </div>
 
-                                <InputError message={errors.email} />
-                            </div>
-
-                            <div className="my-6 flex items-center justify-start">
-                                <Button className="w-full" disabled={processing}>
-                                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                    Email password reset link
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </Form>
-
-                <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>Or, return to</span>
-                    <TextLink href={route('login')}>log in</TextLink>
+          <Card>
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
+              <CardDescription className="text-center">
+                Enter your email to receive a reset link
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {status && (
+                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">{status}</p>
                 </div>
-            </div>
-        </AuthLayout>
-    );
+              )}
+
+              <form onSubmit={submit} className="space-y-4">
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="email"
+                      type="email"
+                      value={data.email}
+                      onChange={(e) => setData('email', e.target.value)}
+                      className="pl-10"
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={processing}
+                  className="w-full"
+                >
+                  {processing ? 'Sending...' : 'Send Password Reset Link'}
+                </Button>
+
+                <div className="text-center">
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500"
+                  >
+                    <ArrowLeft className="mr-1 h-4 w-4" />
+                    Back to login
+                  </Link>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </>
+  );
 }
