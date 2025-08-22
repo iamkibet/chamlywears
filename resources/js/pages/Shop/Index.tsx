@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/common/ProductCard';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, Grid, List } from 'lucide-react';
+import { useCart } from '@/components/common/CartProvider';
 
 interface Product {
   id: number;
@@ -20,6 +21,9 @@ interface Product {
     slug: string;
   };
   featured: boolean;
+  has_variants?: boolean;
+  available_colors?: string[];
+  available_sizes?: string[];
 }
 
 interface Category {
@@ -47,6 +51,27 @@ interface ShopProps {
 }
 
 export default function Shop({ products, categories, filters }: ShopProps) {
+  const { addToCart } = useCart();
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  const handleAddToCart = (product: Product) => {
+    // For products with variants, we'll use default values
+    // In a real app, you might want to show a modal to select size/color
+    const defaultColor = product.available_colors?.[0] || 'Default';
+    const defaultSize = product.available_sizes?.[0] || 'Default';
+    
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0] || '/images/chamly/11.jpeg',
+      size: defaultSize,
+      color: defaultColor,
+      category: product.category.name,
+      slug: product.slug
+    });
+  };
+
   return (
     <MainLayout>
       <Head title="Shop - Chamly Wears" />
@@ -134,19 +159,35 @@ export default function Shop({ products, categories, filters }: ShopProps) {
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant={viewMode === 'grid' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                  >
                     <Grid className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant={viewMode === 'list' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                  >
                     <List className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
 
               {/* Products Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className={`grid gap-6 ${
+                viewMode === 'grid' 
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+                  : 'grid-cols-1'
+              }`}>
                 {products.data.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    onAddToCart={handleAddToCart}
+                  />
                 ))}
               </div>
 

@@ -48,7 +48,7 @@ class DashboardController extends Controller
         $totalRevenue = Order::where('status', 'completed')->sum('total') ?? 0;
         
         // Calculate total inventory value
-        $totalInventoryValue = Product::sum(\DB::raw('price * stock')) ?? 0;
+        $totalInventoryValue = Product::sum(\DB::raw('price * total_stock')) ?? 0;
         
         // Calculate growth percentages (simplified for now)
         $userGrowth = 12; // Placeholder - can be calculated from actual data
@@ -212,15 +212,15 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(function ($product) {
-                $stockStatus = $product->stock <= 10 ? 'low stock' : 'updated';
+                $stockStatus = $product->total_stock <= 10 ? 'low stock' : 'updated';
                 return [
                     'type' => 'product_update',
                     'title' => "Product {$stockStatus}",
-                    'description' => "{$product->name} - Stock: {$product->stock}",
+                    'description' => "{$product->name} - Stock: {$product->total_stock}",
                     'customer' => null,
                     'timestamp' => $product->updated_at,
                     'icon' => 'Package',
-                    'color' => $product->stock <= 10 ? 'red' : 'blue'
+                    'color' => $product->total_stock <= 10 ? 'red' : 'blue'
                 ];
             });
         $recentActivities = $recentActivities->merge($recentProductUpdates);
@@ -284,7 +284,7 @@ class DashboardController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'total_stock' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'slug' => 'required|string|unique:products,slug',
             'image' => 'nullable|string',
@@ -311,7 +311,7 @@ class DashboardController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'total_stock' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'slug' => 'required|string|unique:products,slug,' . $product->id,
             'image' => 'nullable|string',
@@ -536,7 +536,7 @@ class DashboardController extends Controller
                 ]);
 
                 // Update product stock
-                $product->decrement('stock', $item['quantity']);
+                $product->decrement('total_stock', $item['quantity']);
             }
 
             \DB::commit();
@@ -557,7 +557,7 @@ class DashboardController extends Controller
     public function createOrderPage(): Response
     {
         $products = Product::with('category')
-            ->where('stock', '>', 0)
+            ->where('total_stock', '>', 0)
             ->where('is_active', true)
             ->orderBy('name')
             ->get();

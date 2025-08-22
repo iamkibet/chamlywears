@@ -21,7 +21,18 @@ export default function Profile({ auth, mustVerifyEmail, status }: any) {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    patch(route('profile.update'));
+    console.log('Submitting profile form with data:', data);
+    patch('/settings/profile', {
+      onSuccess: () => {
+        console.log('Profile updated successfully');
+      },
+      onError: (errors) => {
+        console.error('Profile update errors:', errors);
+      },
+      onFinish: () => {
+        console.log('Profile update finished');
+      }
+    });
   };
 
   return (

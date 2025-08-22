@@ -29,15 +29,37 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        try {
+            $user = $request->user();
+            $validated = $request->validated();
+            
+            \Log::info('Profile update attempt', [
+                'user_id' => $user->id,
+                'validated_data' => $validated
+            ]);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+            $user->fill($validated);
+
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
+
+            $user->save();
+            
+            \Log::info('Profile updated successfully', [
+                'user_id' => $user->id
+            ]);
+
+            return to_route('profile.edit')->with('status', 'Profile updated successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Profile update failed', [
+                'user_id' => $request->user()->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return to_route('profile.edit')->withErrors(['general' => 'Failed to update profile. Please try again.']);
         }
-
-        $request->user()->save();
-
-        return to_route('profile.edit');
     }
 
     /**

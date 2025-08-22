@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\CategoryController;
 
 // Admin routes - require authentication, verification, and admin privileges
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -11,22 +13,22 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     
     // Products management
     Route::prefix('products')->name('products.')->group(function () {
-        Route::get('/', [DashboardController::class, 'products'])->name('index');
-        Route::get('/create', [DashboardController::class, 'createProduct'])->name('create');
-        Route::post('/', [DashboardController::class, 'storeProduct'])->name('store');
-        Route::get('/{product}/edit', [DashboardController::class, 'editProduct'])->name('edit');
-        Route::put('/{product}', [DashboardController::class, 'updateProduct'])->name('update');
-        Route::delete('/{product}', [DashboardController::class, 'destroyProduct'])->name('destroy');
+        Route::get('/', [ProductController::class, 'index'])->name('index');
+        Route::get('/create', [ProductController::class, 'create'])->name('create');
+        Route::post('/', [ProductController::class, 'store'])->name('store');
+        Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
+        Route::put('/{product}', [ProductController::class, 'update'])->name('update');
+        Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy');
     });
     
     // Categories management
     Route::prefix('categories')->name('categories.')->group(function () {
-        Route::get('/', [DashboardController::class, 'categories'])->name('index');
-        Route::get('/create', [DashboardController::class, 'createCategory'])->name('create');
-        Route::post('/', [DashboardController::class, 'storeCategory'])->name('store');
-        Route::get('/{category}/edit', [DashboardController::class, 'editCategory'])->name('edit');
-        Route::put('/{category}', [DashboardController::class, 'updateCategory'])->name('update');
-        Route::delete('/{category}', [DashboardController::class, 'destroyCategory'])->name('destroy');
+        Route::get('/', [CategoryController::class, 'index'])->name('index');
+        Route::get('/create', [CategoryController::class, 'create'])->name('create');
+        Route::post('/', [CategoryController::class, 'store'])->name('store');
+        Route::get('/{category}/edit', [CategoryController::class, 'edit'])->name('edit');
+        Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
+        Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
     });
     
     // Orders management

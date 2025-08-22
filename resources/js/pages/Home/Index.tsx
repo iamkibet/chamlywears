@@ -7,6 +7,7 @@ import { CategorySpotlight } from '@/components/common/CategorySpotlight';
 import { ProductCard } from '@/components/common/ProductCard';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Star, Truck, Shield, Heart } from 'lucide-react';
+import { useCart } from '@/components/common/CartProvider';
 
 interface HomePageProps {
   banners: any[];
@@ -17,6 +18,40 @@ interface HomePageProps {
 
 function HomeContent({ banners, homepageBlocks, featuredProducts, allProducts }: HomePageProps) {
   const { openMenu } = useMenu();
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (product: any) => {
+    console.log('Adding product to cart:', product);
+    console.log('addToCart function:', addToCart);
+    
+    try {
+      // For products with variants, we'll use default values
+      // In a real app, you might want to show a modal to select size/color
+      const defaultColor = product.available_colors?.[0] || 'Default';
+      const defaultSize = product.available_sizes?.[0] || 'Default';
+      
+      const cartItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0] || '/images/chamly/11.jpeg',
+        size: defaultSize,
+        color: defaultColor,
+        category: product.category?.name || 'Product',
+        slug: product.slug
+      };
+      
+      console.log('Cart item being added:', cartItem);
+      addToCart(cartItem);
+      console.log('Product added to cart successfully');
+      
+      // Show success feedback
+      // You could add a toast notification here
+      
+    } catch (error) {
+      console.error('Error adding product to cart:', error);
+    }
+  };
 
   return (
     <>
@@ -45,7 +80,11 @@ function HomeContent({ banners, homepageBlocks, featuredProducts, allProducts }:
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onAddToCart={handleAddToCart}
+              />
             ))}
           </div>
           

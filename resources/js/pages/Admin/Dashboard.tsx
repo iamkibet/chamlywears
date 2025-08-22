@@ -270,14 +270,11 @@ export default function AdminDashboard({
               <p className="text-gray-600">Welcome back! Here's what's happening with your store today.</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                Last 30 days
-              </Button>
+            
               <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
-                <Link href="/admin/orders/create">
+                <Link href="/admin/products/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Order
+                  Create Product
                 </Link>
               </Button>
               <Button size="sm">

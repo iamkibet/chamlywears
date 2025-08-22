@@ -14,6 +14,9 @@ interface Product {
     name: string;
     slug: string;
   };
+  has_variants?: boolean;
+  available_colors?: string[];
+  available_sizes?: string[];
 }
 
 interface ProductCardProps {

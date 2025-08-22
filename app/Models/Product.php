@@ -19,22 +19,24 @@ class Product extends Model
         'price',
         'compare_at_price',
         'sku',
-        'stock',
-        'sizes',
-        'colors',
+        'available_colors',
+        'available_sizes',
         'images',
         'is_active',
         'featured',
+        'has_variants',
+        'total_stock',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'compare_at_price' => 'decimal:2',
-        'sizes' => 'array',
-        'colors' => 'array',
+        'available_colors' => 'array',
+        'available_sizes' => 'array',
         'images' => 'array',
         'is_active' => 'boolean',
         'featured' => 'boolean',
+        'has_variants' => 'boolean',
     ];
 
     public function category(): BelongsTo
@@ -45,6 +47,11 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class);
     }
 
     public function scopeActive($query)
@@ -59,7 +66,7 @@ class Product extends Model
 
     public function scopeInStock($query)
     {
-        return $query->where('stock', '>', 0);
+        return $query->where('total_stock', '>', 0);
     }
 
     public function scopeByCategory($query, $categoryId)
